@@ -35,8 +35,14 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
           scope: '@customerio'
 
+      - name: Bump Version
+        run: |
+          cd packages/${{ matrix.package }}
+          npm version ${{ github.event.inputs.version }}
+
       - name: Install & Build
         run: |
+          cd packages/${{ matrix.package }}
           yarn install --frozen-lockfile
           yarn build
 
@@ -45,7 +51,6 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           cd packages/${{ matrix.package }}
-          npm version ${{ github.event.inputs.version }}
           npm publish
 
   github:
@@ -69,8 +74,14 @@ jobs:
           registry-url: 'https://npm.pkg.github.com'
           scope: '@customerio'
 
+      - name: Bump Version
+        run: |
+          cd packages/${{ matrix.package }}
+          npm version ${{ github.event.inputs.version }}
+
       - name: Install & Build
         run: |
+          cd packages/${{ matrix.package }}
           yarn install --frozen-lockfile
           yarn build
 
@@ -79,7 +90,6 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cd packages/${{ matrix.package }}
-          npm version ${{ github.event.inputs.version }}
           npm publish
 
   commit:
@@ -119,5 +129,6 @@ jobs:
 
       - name: Push changes
         run: |
-          git commit -am "Update version"
+          git add .
+          git commit -m "Update version"
           git push
