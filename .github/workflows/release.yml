@@ -35,15 +35,19 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
           scope: '@customerio'
 
+      - name: Install Dependencies
+        run: |
+          cd packages/${{ matrix.package }}
+          yarn install --frozen-lockfile
+
       - name: Bump Version
         run: |
           cd packages/${{ matrix.package }}
           npm version ${{ github.event.inputs.version }}
 
-      - name: Install & Build
+      - name: Build Package
         run: |
           cd packages/${{ matrix.package }}
-          yarn install --frozen-lockfile
           yarn build
 
       - name: Publish
@@ -74,15 +78,19 @@ jobs:
           registry-url: 'https://npm.pkg.github.com'
           scope: '@customerio'
 
+      - name: Install Dependencies
+        run: |
+          cd packages/${{ matrix.package }}
+          yarn install --frozen-lockfile
+
       - name: Bump Version
         run: |
           cd packages/${{ matrix.package }}
           npm version ${{ github.event.inputs.version }}
 
-      - name: Install & Build
+      - name: Build Package
         run: |
           cd packages/${{ matrix.package }}
-          yarn install --frozen-lockfile
           yarn build
 
       - name: Publish
