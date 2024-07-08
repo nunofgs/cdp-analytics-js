@@ -55,7 +55,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           cd packages/${{ matrix.package }}
-          npm publish
+          npm publish --dry-run
 
   github:
     runs-on: ubuntu-latest
@@ -98,7 +98,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cd packages/${{ matrix.package }}
-          npm publish
+          npm publish --dry-run
 
   commit:
     runs-on: ubuntu-latest
@@ -139,4 +139,4 @@ jobs:
         run: |
           git add .
           git commit -m "Update version"
-          git push
+          git show
