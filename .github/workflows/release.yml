@@ -12,6 +12,11 @@ on:
           - major
           - minor
           - patch
+      dry-run:
+        type: boolean
+        description: Whether to perform a dry run or not
+        required: true
+        default: true
 
 jobs:
   npm:
@@ -35,27 +40,34 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
           scope: '@customerio'
 
-      - name: Install Dependencies
+      - name: Install
         run: |
-          cd packages/${{ matrix.package }}
           yarn install --frozen-lockfile
 
-      - name: Bump Version
+      - name: Bump version
         run: |
           cd packages/${{ matrix.package }}
           npm version ${{ github.event.inputs.version }}
 
-      - name: Build Package
+      - name: Build
         run: |
-          cd packages/${{ matrix.package }}
           yarn build
 
-      - name: Publish
+      - name: Publish (dry-run)
+        if: ${{ github.event.inputs.dry-run == 'true' }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           cd packages/${{ matrix.package }}
           npm publish --dry-run
+
+      - name: Publish
+        if: ${{ github.event.inputs.dry-run == 'false' }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          cd packages/${{ matrix.package }}
+          npm publish
 
   github:
     runs-on: ubuntu-latest
@@ -78,27 +90,34 @@ jobs:
           registry-url: 'https://npm.pkg.github.com'
           scope: '@customerio'
 
-      - name: Install Dependencies
+      - name: Install
         run: |
-          cd packages/${{ matrix.package }}
           yarn install --frozen-lockfile
 
-      - name: Bump Version
+      - name: Bump version
         run: |
           cd packages/${{ matrix.package }}
           npm version ${{ github.event.inputs.version }}
 
-      - name: Build Package
+      - name: Build
         run: |
-          cd packages/${{ matrix.package }}
           yarn build
 
-      - name: Publish
+      - name: Publish (dry-run)
+        if: ${{ github.event.inputs.dry-run == 'true' }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cd packages/${{ matrix.package }}
           npm publish --dry-run
+
+      - name: Publish
+        if: ${{ github.event.inputs.dry-run == 'false' }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd packages/${{ matrix.package }}
+          npm publish
 
   commit:
     runs-on: ubuntu-latest
@@ -135,8 +154,14 @@ jobs:
           cd packages/node
           yarn version ${{ github.event.inputs.version }}
 
-      - name: Push changes
+      - name: Show commit (dry-run)
+        if: ${{ github.event.inputs.dry-run == 'true' }}
         run: |
-          git add .
-          git commit -m "Update version"
+          git commit -am "Update version"
           git show
+
+      - name: Push changes
+        if: ${{ github.event.inputs.dry-run == 'false' }}
+        run: |
+          git commit -am "Update version"
+          git push
