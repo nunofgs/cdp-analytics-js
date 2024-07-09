@@ -22,13 +22,6 @@ jobs:
   npm:
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        package:
-          - browser
-          - core
-          - node
-
     steps:
       - uses: actions/checkout@v3
 
@@ -44,10 +37,21 @@ jobs:
         run: |
           yarn install --frozen-lockfile
 
-      - name: Bump version
+      - name: Bump core
         run: |
-          cd packages/${{ matrix.package }}
-          npm version ${{ github.event.inputs.version }}
+          cd packages/core
+          yarn version ${{ github.event.inputs.version }}
+
+      - name: Bump browser
+        run: |
+          cd packages/browser
+          yarn version ${{ github.event.inputs.version }}
+          yarn run build-prep
+
+      - name: Bump node
+        run: |
+          cd packages/node
+          yarn version ${{ github.event.inputs.version }}
 
       - name: Build
         run: |
@@ -58,26 +62,25 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          cd packages/${{ matrix.package }}
-          npm publish --dry-run
+          for package in core browser node; do
+            pushd packages/$package
+            npm publish --dry-run
+            popd
+          done
 
       - name: Publish
         if: ${{ github.event.inputs.dry-run == 'false' }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          cd packages/${{ matrix.package }}
-          npm publish
+          for package in core browser node; do
+            pushd packages/$package
+            npm publish
+            popd
+          done
 
   github:
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        package:
-          - browser
-          - core
-          - node
 
     steps:
       - uses: actions/checkout@v3
@@ -94,10 +97,21 @@ jobs:
         run: |
           yarn install --frozen-lockfile
 
-      - name: Bump version
+      - name: Bump core
         run: |
-          cd packages/${{ matrix.package }}
-          npm version ${{ github.event.inputs.version }}
+          cd packages/core
+          yarn version ${{ github.event.inputs.version }}
+
+      - name: Bump browser
+        run: |
+          cd packages/browser
+          yarn version ${{ github.event.inputs.version }}
+          yarn run build-prep
+
+      - name: Bump node
+        run: |
+          cd packages/node
+          yarn version ${{ github.event.inputs.version }}
 
       - name: Build
         run: |
@@ -108,16 +122,22 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          cd packages/${{ matrix.package }}
-          npm publish --dry-run
+          for package in core browser node; do
+            pushd packages/$package
+            npm publish --dry-run
+            popd
+          done
 
       - name: Publish
         if: ${{ github.event.inputs.dry-run == 'false' }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          cd packages/${{ matrix.package }}
-          npm publish
+          for package in core browser node; do
+            pushd packages/$package
+            npm publish
+            popd
+          done
 
   commit:
     runs-on: ubuntu-latest
